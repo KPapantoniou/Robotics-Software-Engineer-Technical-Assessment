@@ -1,5 +1,5 @@
 # Robotics Software Engineer Technical Assessment
-This project is  technical assessment for a position in Progressive Robotics. It is divided in three main steps.
+This project is a technical assessment for a position in Progressive Robotics. It is divided in three main steps.
 
 ## Step 1: Development Environment with Docker
 The first step is to set up the development environment required to run the ROS2 software pipeline. Since ROS2 Humble is mainly for Ubuntu 22.04, and the project needs to remain portable across different operating systems, Docker is used to provide a consistent and reproducible development environment.
@@ -23,7 +23,7 @@ After successfully building the image, in order to start the container and run t
 ```bash
 docker compose up -d
 ```
-For the informations of the system:
+To verify the container is running:
 ```bash
 docker ps
 ```
@@ -35,7 +35,7 @@ docker exec -it <container_name> /bin/bash
 ### Troubleshooting
 Because the Docker builds an image on Windows, it runs inside a lightweight Linux VM managed by Docker Desktop. That VM sometimes uses Windows' DNS setting, which can be misconfigured through a different DNS resulting to random 'Bad Request' errors when trying to download packages. The fix was to explicitly tell Docker to use a public DNS server instead of the system default.
 In the system settings->Docker Engine of Docker Desktop:
-```bash
+```json
   "dns": [
     "8.8.8.8",
     "1.1.1.1"
