@@ -3,7 +3,7 @@
 services:
   ros2_dev:
     build : .
-    container_name: ros2_cointainer
+    container_name: ros2_container
     volumes:
       - ./src:/ros2_ws/src
     tty: true
