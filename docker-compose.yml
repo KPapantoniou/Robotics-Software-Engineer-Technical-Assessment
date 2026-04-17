@@ -1,0 +1,9 @@
+
+
+services:
+  ros2_dev:
+    build : .
+    container_name: ros2_cointainer
+    volumes:
+      - ./src:/ros2_ws/src
+    tty: true
