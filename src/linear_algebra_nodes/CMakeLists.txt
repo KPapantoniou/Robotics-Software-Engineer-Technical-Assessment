@@ -7,6 +7,29 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(yaml-cpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(linear_algebra_service REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+# set(SOURCE_FILES src/client_node.cpp server_node.cpp)
+
+add_executable(server_node src/server_node.cpp)
+add_executable(client_node src/client_node.cpp)
+
+ament_target_dependencies(server_node rclcpp geometry_msgs linear_algebra_service Eigen3)
+ament_target_dependencies(client_node rclcpp geometry_msgs linear_algebra_service Eigen3)
+
+target_link_libraries(server_node yaml-cpp)
+target_link_libraries(client_node yaml-cpp)
+
+install(TARGETS
+  server_node
+  client_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
