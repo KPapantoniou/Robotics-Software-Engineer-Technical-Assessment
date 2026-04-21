@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ur20_with_gripper">
+
+  <!-- Include the original UR20 description to copy from -->
+  <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
+  
+  <link name="world"/>
+  
+  <!-- old parameters from original xacro file -->
+    <xacro:ur_robot
+        name="ur20"
+        tf_prefix=""
+        parent="world"
+        joint_limits_parameters_file="$(find ur_description)/config/ur20/joint_limits.yaml"
+        kinematics_parameters_file="$(find ur_description)/config/ur20/default_kinematics.yaml"
+        physical_parameters_file="$(find ur_description)/config/ur20/physical_parameters.yaml"
+        visual_parameters_file="$(find ur_description)/config/ur20/visual_parameters.yaml">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:ur_robot>
+
+  
+
+  <!-- Add  custom gripper link -->
+  <link name="gripper_link">
+    <visual>
+      <geometry>
+        <box size="0.3 0.4 0.2"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <!-- Connect gripper to flange -->
+  <joint name="gripper_joint" type="fixed">
+    <parent link="flange"/>
+    <child link="gripper_link"/>
+  </joint>
+
+</robot>
