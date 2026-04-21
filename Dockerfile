@@ -21,7 +21,13 @@ RUN apt-get update && apt-get install -y --fix-missing \
     ros-dev-tools \
     libeigen3-dev \
     libyaml-cpp-dev \
-    ros-humble-rviz-visual-tools 
+    ros-humble-rviz-visual-tools \
+    ros-humble-joint-state-publisher \
+    ros-humble-joint-state-publisher-gui \
+    ros-humble-robot-state-publisher \
+    ros-humble-xacro \
+    ros-humble-tf2-ros \
+    ros-humble-tf2-eigen
 
 RUN apt-get update && apt-get install -y  \
     python3-flake8-docstrings \
@@ -40,3 +46,4 @@ RUN apt-get update && apt-get install -y  \
     python3-pytest-rerunfailures 
 
 RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc
+RUN echo "if [ -f /ros2_ws/install/setup.bash ]; then source /ros2_ws/install/setup.bash; fi" >> /root/.bashrc
