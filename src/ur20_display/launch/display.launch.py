@@ -24,19 +24,36 @@ def generate_launch_description():
         }]
     )
     
-    joint_state_publisher = Node(
-        package='joint_state_publisher',
-        executable='joint_state_publisher',
-    )
+    # joint_state_publisher = Node(
+    #     package='joint_state_publisher',
+    #     executable='joint_state_publisher',
+    # )
     
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
+        arguments=["-d", PathJoinSubstitution([
+            FindPackageShare("ur20_display"),
+            "rviz",
+            "ur20.rviz"
+        ])]
     )
     
+    ur20_display_node = Node(
+        package="ur20_display",
+        executable="ur20_display_node",
+        parameters=[
+            PathJoinSubstitution([
+                FindPackageShare("ur20_display"),
+                "config",
+                "joint_config.yaml"
+            ])
+        ]
+    )
 
     return LaunchDescription([
         robot_state_publisher_node,
-        joint_state_publisher,
-        rviz_node
+        # joint_state_publisher,
+        rviz_node,
+        ur20_display_node
     ])

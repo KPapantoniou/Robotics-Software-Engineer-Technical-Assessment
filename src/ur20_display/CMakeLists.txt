@@ -7,16 +7,29 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(robot_state_publisher REQUIRED)
 find_package(urdf REQUIRED)
 find_package(xacro REQUIRED)
+find_package(rviz_visual_tools REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_eigen REQUIRED)
 install(DIRECTORY
   urdf
   launch
+  config
   rviz
+
   DESTINATION share/${PROJECT_NAME}
 )
 
+add_executable(ur20_display_node src/ur20_display_node.cpp)
+ament_target_dependencies(ur20_display_node rclcpp sensor_msgs tf2_ros Eigen3 rviz_visual_tools)
+
+install(TARGETS
+  ur20_display_node
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 # uncomment the following section in order to fill in
 # further dependencies manually.

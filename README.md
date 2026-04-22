@@ -116,3 +116,7 @@ ros2 topic echo <topic_name>
 ```
 It flashes in the screen the message.
 
+## Step 3
+
+// note, use git submodule update --init --recursive after cloning the repo
+ 
