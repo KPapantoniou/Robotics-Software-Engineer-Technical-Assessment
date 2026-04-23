@@ -50,10 +50,16 @@ def generate_launch_description():
             ])
         ]
     )
+    
+    trajectory_plotter = Node(
+        package='ur20_display',
+        executable='trajectory_plotter.py',
+    )
 
     return LaunchDescription([
         robot_state_publisher_node,
         # joint_state_publisher,
+        ur20_display_node,
         rviz_node,
-        ur20_display_node
+        trajectory_plotter
     ])

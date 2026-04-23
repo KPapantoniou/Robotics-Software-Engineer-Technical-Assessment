@@ -118,5 +118,48 @@ It flashes in the screen the message.
 
 ## Step 3
 
-// note, use git submodule update --init --recursive after cloning the repo
+## Step 3: URDF Visualization and Robot State Control
+
+### Getting the URDF dependency
+The UR20 URDF is included as a git submodule. After cloning the repo:
+```bash
+git submodule update --init --recursive
+```
+
+### How to build
+```bash
+cd /ros2_ws
+colcon build
+source install/setup.bash
+```
+
+### Display setup (required for visualization)
+Find your Windows IP:
+```powershell
+ipconfig
+```
+Set the DISPLAY variable:
+```bash
+export DISPLAY=<your-windows-ip>:0.0
+```
+
+### Single command to launch
+```bash
+ros2 launch ur20_display display.launch.py
+```
+
+### Package description
+The `ur20_display` package contains:
+- `ur20_with_gripper.urdf.xacro` — UR20 URDF with custom box gripper attached to flange
+- `ur20_display_node.cpp` — C++ node that:
+  - Reads joint configuration from parameter server
+  - Publishes joint states to animate the robot
+  - Reads TF transforms and verifies Tf_world_gripper = Tf_world_elbow * Tf_elbow_gripper
+  - Publishes gripper frame and text label via rviz_visual_tools
+  - Generates sinusoidal trajectory (1.5 periods) to random goal configuration
+  - Publishes full trajectory for plotting
+- `trajectory_plotter.py` — Python node that plots joint trajectories via matplotlib
+- `display.launch.py` — launches all components
+- `ur20.rviz` — pre-configured RViz 
+- `L_position_step3` - screenshot for the step 3 objective
  
