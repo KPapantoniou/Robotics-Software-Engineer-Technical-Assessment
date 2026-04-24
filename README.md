@@ -154,17 +154,16 @@ The node uses two main callback functions to handle TF monitoring and robot moti
 
 This function runs periodically using a ROS2 timer and is responsible for TF monitoring and visualization.
 The node verifies the correctness of the transformations by checking the relationship:
-$$
-T_{world→gripper} = T_{world→elbow} ⋅ T_{elbow→gripper}
-​$$
+
+$T_{world→gripper} = T_{world→elbow} ⋅ T_{elbow→gripper}$
+
 This confirms that the TF tree is consistent and that the forward kinematics are correctly computed.
 
 `run_trajectory()`
 
 This function runs in a separate thread and is responsible for generating and executing robot motion. for bonus1 and bonus2. It generates a periodic sinusoidal trajectory between the initial position `q0` and `qf` The trajectory is computed as:
-$$
-q(t)= q_0 + (q_f - q_0) ⋅ 0.5 ⋅ (1-cos(2⋅π⋅t/ T))
-$$
+$q(t)= q_0 + (q_f - q_0) ⋅ 0.5 ⋅ (1-cos(2⋅π⋅t/ T))$
+
 After that it publishes to `sensor_msgs/msg/JointState` for real-time robot animation and to `trajectroy_msgs/msg/JointTrajectroy` where a node from a python script subscribes to the topic and visualize the trajectroy plots for every joint with matplotlib.
 
 ### Visulization
@@ -215,7 +214,7 @@ The `ur20_display` package contains:
 - `screnshot/L_position_step3` - screenshot for the step 3 objective
  
 ### Screenshot
-![UR20 in L position](src/ur20_display/screenshot/L_position_step3.jpg)
+![UR20 in L position](src/ur20_display/screenshot/L_shape_position_step3.jpg)
 
 ## Summary
 
