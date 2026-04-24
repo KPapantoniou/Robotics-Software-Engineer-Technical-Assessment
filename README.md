@@ -75,10 +75,12 @@ ros2 pkg create <package_name> --build-type ament_cmake
 where package_name is the preferable name of the package. 
 
 This command creates a package with this structure 
+```bash
 |── <package_name>/
     |── CMakeLists.txt
     |── package.xml
     |── src/
+```
 The problem is that this is the structure for the conventional packages for the nodes. For the service package, it needs to be in a srv dir so the src needs to be modified.
 
 For each package the CmakeLists.txt and the package.xml needs to be modified in order to add any dependencies, link libraries and have instructions for how to compile and run the system.
