@@ -68,7 +68,7 @@ class ServerNode : public rclcpp::Node{
             logging("[server] Solving least squares problem for " + std::to_string(A_eigen.size()) + " x3 matrix.");
             logging("[server] Matrix A:");    
             for(int i = 0; i < A_eigen.rows(); ++i){
-                logging("[server][ ");
+                
                 std::string row_str;
                 for(int j = 0; j < A_eigen.cols(); ++j){
                     row_str += std::to_string(A_eigen(i, j)) + ", ";

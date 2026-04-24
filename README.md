@@ -88,7 +88,7 @@ For the nodes the files inside the src are .cpp, .hpp and are the backend progra
 After implementing all the necessery components, the packages needs to be build: 
 
 ```bash
-colcon build --packages-select <package_name1> <package_name2> ... 
+colcon build 
 ```
 If it builds succesfully, it is necessery to source the workspace if it isn't already from the Docker image:
 ```bash
@@ -97,7 +97,10 @@ source install/setup.bash
 Then in two seperate workspace terminals, one for each node:
 
 ```bash
-ros2 run <package_name> <node_name> 
+ros2 run linear_algebra_nodes client_node
+```
+```bash
+ros2 run linear_algebra_nodes server_node
 ```
 The logging in the terminals show the messages that the two nodes share, for further check in the system the topic that is created for the publisher can be reviwed from a outside workspace, from a new terminal after it has been sourced:
 
@@ -107,12 +110,12 @@ ros2 topic list
 It shows the topic that exists between the nodes
 
 ```bash
-ros2 topic info <topic_name>
+ros2 topic info /transformed_vector
 ```
 It shows information about the given topic
 
 ```bash
-ros2 topic echo <topic_name>
+ros2 topic echo /transformed_vector
 ```
 It flashes in the screen the message.
 

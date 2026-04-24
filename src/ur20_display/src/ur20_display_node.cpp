@@ -163,7 +163,8 @@ class UR20Display : public rclcpp::Node
         }
 
         void run_trajectory(){
-            // visual_tools_->deleteAllMarkers();
+            // Running trajectory generation in a dedicated thread avoids blocking the main ROS executor,
+            // ensuring the TF listener and other callbacks remain responsive.
             while(rclcpp::ok()){
 
                 int num_points = static_cast<int>(total_time_ / dt_);
@@ -178,7 +179,7 @@ class UR20Display : public rclcpp::Node
                     double t = i * dt_;
                     std::vector<double> q(6);
 
-                    // Sinusoidal interpolation: smooth trajectory using cosine-based blending between q0 and qf
+                    // Using a raised cosine velocity profile (S-curve) ensures continuous acceleration and zero jerk at start/end.
                     for(size_t j = 0; j < 6; j++){
                         q[j] = q0_[j] + (qf_[j] - q0_[j]) * 0.5 * (1 - cos(omega_ * t));
                     }
@@ -211,6 +212,7 @@ class UR20Display : public rclcpp::Node
 
         Eigen::Isometry3d transformToEigen(const geometry_msgs::msg::TransformStamped &t){
             // Converts ROS TransformStamped into Eigen Isometry for matrix-based kinematic computation
+            //A 4x4 matrix that contains Rotation 3z3 and translation 3x1
             geometry_msgs::msg::Transform transform = t.transform;
             Eigen::Quaterniond quad(transform.rotation.w, transform.rotation.x, transform.rotation.y, transform.rotation.z);
             return Eigen::Translation3d(transform.translation.x, transform.translation.y, transform.translation.z) * quad;

@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class TrajectoryPlotter(Node):
+    #Subscribing to the topic
     def __init__(self):
         super().__init__('trajectory_plotter')
         self.subscription = self.create_subscription(
@@ -16,7 +17,8 @@ class TrajectoryPlotter(Node):
             10
         )
         self.get_logger().info('Trajectory Plotter Node started, waiting for trajectory...')
-
+    # Converts JointTrajectory message to a NumPy array for efficient slicing and plotting.
+    # Each joint's position is isolated across the time dimension for visualization. 
     def trajectory_callback(self, msg):
         plt.close('all')
         self.get_logger().info('Received trajectory, plotting...')
