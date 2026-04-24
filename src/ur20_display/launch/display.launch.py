@@ -1,11 +1,24 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
+from launch.substitutions import Command, FindExecutable, PathJoinSubstitution, LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
+from launch.actions import DeclareLaunchArgument
+
 
 
 def generate_launch_description():
-
+    
+    DeclareLaunchArgument(
+        "trajectory",
+        default_value="false"
+    ), 
+     
+    trajectory_arg = DeclareLaunchArgument(
+        "trajectory",
+        default_value="false",
+        description="Enable trajectory execution"
+    )
+    
     robot_description_content = Command([
         PathJoinSubstitution([FindExecutable(name="xacro")]),
         " ",
@@ -39,6 +52,7 @@ def generate_launch_description():
         ])]
     )
     
+    
     ur20_display_node = Node(
         package="ur20_display",
         executable="ur20_display_node",
@@ -47,7 +61,10 @@ def generate_launch_description():
                 FindPackageShare("ur20_display"),
                 "config",
                 "joint_config.yaml"
-            ])
+            ]),
+            {
+                "trajectory": LaunchConfiguration("trajectory")
+            }
         ]
     )
     
@@ -55,8 +72,11 @@ def generate_launch_description():
         package='ur20_display',
         executable='trajectory_plotter.py',
     )
+    
+   
 
     return LaunchDescription([
+        trajectory_arg,
         robot_state_publisher_node,
         # joint_state_publisher,
         ur20_display_node,

@@ -37,6 +37,8 @@ class UR20Display : public rclcpp::Node
             visual_tools_->deleteAllMarkers();
 
             traj_pub_ = this->create_publisher<trajectory_msgs::msg::JointTrajectory>("joint_trajectory", 10);
+            this->declare_parameter("trajectory", false);
+            trajectory_enabled_ = this->get_parameter("trajectory").as_bool();
 
         }
 
@@ -71,22 +73,39 @@ class UR20Display : public rclcpp::Node
 
         rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr traj_pub_;
         std::thread trajectory_thread_; 
+        bool trajectory_enabled_ = false;
 
         void initial(){
             initial_timer_->cancel();
             joint_state.name={"shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint", "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"};
             joint_state.position = joint_config_;
-            for (int i = 0; i < 20; i++) {
+
+            bool tf_ready = false;
+            while (rclcpp::ok() && !tf_ready) {
                 joint_state.header.stamp = this->now();
                 joint_pub_->publish(joint_state);
-                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+                try {
+                    tf_buffer_->lookupTransform("world", "gripper_link", tf2::TimePointZero);
+                    tf_ready = true;
+                    RCLCPP_INFO(this->get_logger(), "TF is ready.");
+                } catch (...) {
+                    RCLCPP_WARN(this->get_logger(), "Waiting for TF...");
+                }
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
+            timer_ = this->create_wall_timer(30ms, std::bind(&UR20Display::tf_timer, this));
             q0_ = joint_config_;
             q_.resize(q0_.size());
             qf_.resize(q0_.size());
-            random_goal(qf_);
-            timer_ = this->create_wall_timer(33ms, std::bind(&UR20Display::tf_timer, this));
-            trajectory_thread_ = std::thread(&UR20Display::run_trajectory, this);
+            
+            
+            if(trajectory_enabled_){
+                random_goal(qf_);
+                trajectory_thread_ = std::thread(&UR20Display::run_trajectory, this);
+            }
+            
         }
         
         void tf_timer(){
@@ -184,7 +203,7 @@ class UR20Display : public rclcpp::Node
                 traj_pub_->publish(traj_msg);
                 RCLCPP_INFO(this->get_logger(), "Trajectory published!");
 
-                q0_ = joint_config_;
+                q0_ = qf_;
                 random_goal(qf_);
                 std::this_thread::sleep_for(std::chrono::seconds(5));
             }

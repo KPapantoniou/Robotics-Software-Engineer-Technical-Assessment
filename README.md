@@ -90,7 +90,7 @@ After implementing all the necessery components, the packages needs to be build:
 ```bash
 colcon build --packages-select <package_name1> <package_name2> ... 
 ```
-If it builds succesfully, it is necessery to source the workspace:
+If it builds succesfully, it is necessery to source the workspace if it isn't already from the Docker image:
 ```bash
 source install/setup.bash
 ```
@@ -116,24 +116,77 @@ ros2 topic echo <topic_name>
 ```
 It flashes in the screen the message.
 
-## Step 3
-
 ## Step 3: URDF Visualization and Robot State Control
+The third part of the project focuses on loading a robot model, controlling its joint states, and visualizing its motion and transformations in RViz using ROS2 tools.
 
-### Getting the URDF dependency
+### URDF Integration and Robot Description
+The UR20 robot model is described using a URDF file, which defines the links, joints, and kinematic structure of the robot. The URDF is extended using a Xacro file `ur20_with_gripper.urdf.xacro` to attach a custom box gripper at the end-effector.
+
+The robot description is loaded through the launch file and passed as a parameter to the `robot_state_publisher` node.
+
 The UR20 URDF is included as a git submodule. After cloning the repo:
 ```bash
 git submodule update --init --recursive
 ```
+The `ur20_display_node` is responsible for driving the robot motion. It publishes joint states to the /joint_states topic, which is then used by `robot_state_publisher` to compute forward kinematics and update the TF tree.
 
-### How to build
-```bash
-cd /ros2_ws
-colcon build
-source install/setup.bash
-```
+### Display Node
 
+The ur20_display_node.cpp is the main control node of this step.
+
+It:
+
+- Reads joint values from parameters
+- Publishes joint states to /joint_states
+- Generates a smooth sinusoidal trajectory to a target configuration
+- Publishes the full trajectory for plotting
+- Reads TF transforms to verify kinematic relationships
+
+The sinusoidal trajectory ensures smooth motion without abrupt changes in velocity.
+
+In the constructor it initializes the full ROS2 node infrastructure, it declares and retrives the initial parameters from a yaml file `/config/joint_config.yaml` , setup `the rviz_visual_tools` andthe necessery publishers and threads.
+
+The `initial()` function initializes the robot in the required L-shaped configuration by repeatedly publishing joint states until the TF tree becomes available, this step resolves a common ROS2 issue where TF transforms are not immediately available at startup, and it ensures that the robot is correctly visualized in RViz before any TF queries are performed.
+
+The node uses two main callback functions to handle TF monitoring and robot motion:
+
+`tf_timer()`
+
+This function runs periodically using a ROS2 timer and is responsible for TF monitoring and visualization.
+The node verifies the correctness of the transformations by checking the relationship:
+$$
+T_{world→gripper} = T_{world→elbow} ⋅ T_{elbow→gripper}
+​$$
+This confirms that the TF tree is consistent and that the forward kinematics are correctly computed.
+
+`run_trajectory()`
+
+This function runs in a separate thread and is responsible for generating and executing robot motion. for bonus1 and bonus2. It generates a periodic sinusoidal trajectory between the initial position `q0` and `qf` The trajectory is computed as:
+$$
+q(t)= q_0 + (q_f - q_0) ⋅ 0.5 ⋅ (1-cos(2⋅π⋅t/ T))
+$$
+After that it publishes to `sensor_msgs/msg/JointState` for real-time robot animation and to `trajectroy_msgs/msg/JointTrajectroy` where a node from a python script subscribes to the topic and visualize the trajectroy plots for every joint with matplotlib.
+
+### Visulization
+RViz is used to visualize the robot model in real time, the gripper frame and additional markers and labels using `rviz_visual_tools`. Also the `trajectory_plotter.py` node subscribes to the trajectory topic and plots joint values over time using matplotlib. This helps verify smoothness and correctness of the generated motion.
+
+### Dependencies
+
+The package depends on the following ROS2 components:
+
+- `rclcpp`
+- `sensor_msgs`
+- `trajectory_msgs`
+- `tf2_ros`
+- `geometry_msgs`
+- `rviz_visual_tools`
+- `Eigen3`
+
+These dependencies are declared in the CMakeLists.txt and package.xml files and are required for building and running the node.
 ### Display setup (required for visualization)
+VcXsrv must be running on Windows with "Disable access control" enabled.
+Download from: https://sourceforge.net/projects/vcxsrv/
+In case there is an issue with the visualization a simple solution is to connect the virtual display with the actual manualy
 Find your Windows IP:
 ```powershell
 ipconfig
@@ -143,23 +196,34 @@ Set the DISPLAY variable:
 export DISPLAY=<your-windows-ip>:0.0
 ```
 
-### Single command to launch
+### Command to launch
 ```bash
 ros2 launch ur20_display display.launch.py
 ```
+Or for the bonus, to run the trajectory and the parallel plotting
 
-### Package description
+```bash
+ros2 launch ur20_display display.launch.py trajectory:=true
+```
+### Package structure
 The `ur20_display` package contains:
-- `ur20_with_gripper.urdf.xacro` — UR20 URDF with custom box gripper attached to flange
-- `ur20_display_node.cpp` — C++ node that:
-  - Reads joint configuration from parameter server
-  - Publishes joint states to animate the robot
-  - Reads TF transforms and verifies Tf_world_gripper = Tf_world_elbow * Tf_elbow_gripper
-  - Publishes gripper frame and text label via rviz_visual_tools
-  - Generates sinusoidal trajectory (1.5 periods) to random goal configuration
-  - Publishes full trajectory for plotting
-- `trajectory_plotter.py` — Python node that plots joint trajectories via matplotlib
-- `display.launch.py` — launches all components
-- `ur20.rviz` — pre-configured RViz 
-- `L_position_step3` - screenshot for the step 3 objective
+- `urdf/ur20_with_gripper.urdf.xacro` — UR20 URDF with custom box gripper attached to flange
+- `src/ur20_display_node.cpp` — C++ node that:
+- `scripts/trajectory_plotter.py` — Python node that plots joint trajectories via matplotlib
+- `launch/display.launch.py` — launches all components
+- `rviz/ur20.rviz` — pre-configured RViz 
+- `screnshot/L_position_step3` - screenshot for the step 3 objective
  
+### Screenshot
+![UR20 in L position](src/ur20_display/screenshot/L_position_step3.jpg)
+
+## Summary
+
+This project demonstrates a complete ROS2 pipeline including:
+
+Containerized development environment
+Distributed computation using services and nodes
+Robot modeling and TF-based kinematics
+Real-time visualization and trajectory generation
+
+The system is designed to be modular, reproducible, and extensible, following standard ROS2 development practices.
